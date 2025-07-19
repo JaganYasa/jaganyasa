@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hospital & Appointment Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        #calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+        .calendar-day {
+            min-height: 80px;
+            border: 1px solid #ddd;
+            padding: 5px;
+        }
+        .time-slot {
+            background-color: #e2f3ff;
+            margin: 2px 0;
+            padding: 2px;
+            cursor: pointer;
+        }
+        .time-slot.booked {
+            background-color: #ffeaea;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+        <header class="mb-8 text-center">
+            <img src="https://placehold.co/1200x400" alt="Modern hospital building with glass facade and green surroundings, showing a clean and professional healthcare environment" class="w-full h-64 object-cover rounded-lg mb-4">
+            <h1 class="text-4xl font-bold text-blue-800">Hospital & Appointment Management System</h1>
+        </header>
+
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="flex border-b">
+                <button class="tab-btn px-4 py-2 font-medium text-blue-600 border-b-2 border-blue-600" data-tab="register">Registration</button>
+                <button class="tab-btn px-4 py-2 font-medium text-gray-500" data-tab="hospital-admin">Hospital Admin</button>
+                <button class="tab-btn px-4 py-2 font-medium text-gray-500" data-tab="doctor">Doctor</button>
+                <button class="tab-btn px-4 py-2 font-medium text-gray-500" data-tab="patient">Patient</button>
+            </div>
+
+            <!-- Registration Tab -->
+            <div id="register" class="tab-content active p-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Hospital Registration -->
+                    <div class="border rounded-lg p-4">
+                        <h3 class="text-lg font-semibold mb-4 text-blue-700">Register Hospital</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Hospital Name</label>
+                                <input type="text" id="hospital-name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Location</label>
+                                <input type="text" id="hospital-location" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            </div>
+                            <button id="register-hospital" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">Register Hospital</button>
+                        </div>
+                    </div>
+
+                    <!-- Doctor Registration -->
+                    <div class="border rounded-lg p-4">
+                        <h3 class="text-lg font-semibold mb-4 text-blue-700">Register Doctor</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Name</label>
+                                <input type="text" id="doctor-name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Qualifications</label>
+                                <input type="text" id="doctor-qualifications" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Specializations (comma separated)</label>
+                                <input type="text" id="doctor-specializations" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Years of Experience</label>
+                                <input type="number" id="doctor-experience" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            </div>
+                            <button id="register-doctor" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">Register Doctor</button>
+                        </div>
+                    </div>
+
+                    <!-- Patient Registration -->
+                    <div class="border rounded-lg p-4">
+                        <h3 class="text-lg font-semibold mb-4 text-blue-700">Register Patient</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Name</label>
+                                <input type="text" id="patient-name" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Gender</label>
+                                <select id="patient-gender" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Date of Birth</label>
+                                <input type="date" id="patient-dob" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Unique ID (Aadhar/Passport)</label>
+                                <input type="text" id="patient-id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            </div>
+                            <button id="register-patient" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">Register Patient</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hospital Admin Tab -->
+            <div id="hospital-admin" class="tab-content p-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-1">
+                        <h3 class="text-lg font-semibold mb-4 text-blue-700">Hospital Admin Panel</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Select Hospital</label>
+                                <select id="admin-hospital-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                    <option value="">-- Select Hospital --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Add Department</label>
+                                <input type="text" id="new-department" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                <button id="add-department" class="mt-2 bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">Add Department</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="md:col-span-2">
+                        <div id="hospital-admin-dashboard">
+                            <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                                <h4 class="font-semibold text-blue-800">Hospital Statistics</h4>
+                                <div class="grid grid-cols-3 gap-4 mt-2">
+                                    <div class="bg-white p-3 rounded shadow">
+                                        <p class="text-sm text-gray-500">Total Doctors</p>
+                                        <p class="text-xl font-bold" id="total-doctors">0</p>
+                                    </div>
+                                    <div class="bg-white p-3 rounded shadow">
+                                        <p class="text-sm text-gray-500">Total Consultations</p>
+                                        <p class="text-xl font-bold" id="total-consultations">0</p>
+                                    </div>
+                                    <div class="bg-white p-3 rounded shadow">
+                                        <p class="text-sm text-gray-500">Total Revenue</p>
+                                        <p class="text-xl font-bold" id="total-revenue">₹0</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="bg-white p-4 rounded shadow">
+                                    <h5 class="font-medium text-blue-700 mb-2">Doctors List</h5>
+                                    <div class="overflow-y-auto max-h-60">
+                                        <table class="min-w-full divide-y divide-gray-200">
+                                            <thead class="bg-gray-50">
+                                                <tr>
+                                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Name</th>
+                                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Specializations</th>
+                                                    <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Fee</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="hospital-doctors-list" class="bg-white divide-y divide-gray-200">
+                                                <!-- Doctors will be listed here -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="bg-white p-4 rounded shadow">
+                                    <h5 class="font-medium text-blue-700 mb-2">Revenue by Department</h5>
+                                    <div id="department-revenue-chart">
+                                        <!-- Chart will be rendered here -->
+                                        <img src="https://placehold.co/300x200" alt="Bar chart showing revenue distribution across hospital departments with blue bars" class="w-full">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Doctor Tab -->
+            <div id="doctor" class="tab-content p-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-1">
+                        <h3 class="text-lg font-semibold mb-4 text-blue-700">Doctor Panel</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Select Doctor</label>
+                                <select id="doctor-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                    <option value="">-- Select Doctor --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Select Hospital</label>
+                                <select id="doctor-hospital-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                    <option value="">-- Select Hospital --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Consultation Fee (₹)</label>
+                                <input type="number" id="doctor-fee" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            </div>
+                            <button id="set-doctor-fee" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">Set Fee</button>
+                        </div>
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-700">Date</label>
+                            <input type="date" id="availability-date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            <div class="mt-2">
+                                <label class="block text-sm font-medium text-gray-700">Time Slots</label>
+                                <div class="mt-1 grid grid-cols-3 gap-2">
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="slot-9am" value="09:00" class="h-4 w-4 text-blue-600">
+                                        <label for="slot-9am" class="ml-2 text-sm">9:00 AM</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="slot-10am" value="10:00" class="h-4 w-4 text-blue-600">
+                                        <label for="slot-10am" class="ml-2 text-sm">10:00 AM</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="slot-11am" value="11:00" class="h-4 w-4 text-blue-600">
+                                        <label for="slot-11am" class="ml-2 text-sm">11:00 AM</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="slot-12pm" value="12:00" class="h-4 w-4 text-blue-600">
+                                        <label for="slot-12pm" class="ml-2 text-sm">12:00 PM</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="slot-2pm" value="14:00" class="h-4 w-4 text-blue-600">
+                                        <label for="slot-2pm" class="ml-2 text-sm">2:00 PM</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="slot-3pm" value="15:00" class="h-4 w-4 text-blue-600">
+                                        <label for="slot-3pm" class="ml-2 text-sm">3:00 PM</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="slot-4pm" value="16:00" class="h-4 w-4 text-blue-600">
+                                        <label for="slot-4pm" class="ml-2 text-sm">4:00 PM</label>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="slot-5pm" value="17:00" class="h-4 w-4 text-blue-600">
+                                        <label for="slot-5pm" class="ml-2 text-sm">5:00 PM</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <button id="set-availability" class="mt-3 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">Set Availability</button>
+                        </div>
+                    </div>
+                    <div class="md:col-span-2">
+                        <div id="doctor-dashboard">
+                            <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                                <h4 class="font-semibold text-blue-800">Doctor Statistics</h4>
+                                <div class="grid grid-cols-3 gap-4 mt-2">
+                                    <div class="bg-white p-3 rounded shadow">
+                                        <p class="text-sm text-gray-500">Total Consultations</p>
+                                        <p class="text-xl font-bold" id="doctor-total-consults">0</p>
+                                    </div>
+                                    <div class="bg-white p-3 rounded shadow">
+                                        <p class="text-sm text-gray-500">Total Earnings</p>
+                                        <p class="text-xl font-bold" id="doctor-total-earnings">₹0</p>
+                                    </div>
+                                    <div class="bg-white p-3 rounded shadow">
+                                        <p class="text-sm text-gray-500">Hospitals</p>
+                                        <p class="text-xl font-bold" id="doctor-hospital-count">0</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-4">
+                                <div class="bg-white p-4 rounded shadow">
+                                    <h5 class="font-medium text-blue-700 mb-2">Calendar View</h5>
+                                    <div id="calendar" class="mt-2">
+                                        <!-- Calendar days will be generated here -->
+                                    </div>
+                                </div>
+
+                                <div class="bg-white p-4 rounded shadow">
+                                    <h5 class="font-medium text-blue-700 mb-2">Earnings by Hospital</h5>
+                                    <div id="doctor-hospital-earnings">
+                                        <!-- Table will be generated here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Patient Tab -->
+            <div id="patient" class="tab-content p-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-1">
+                        <h3 class="text-lg font-semibold mb-4 text-blue-700">Patient Panel</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Select Patient</label>
+                                <select id="patient-select" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                    <option value="">-- Select Patient --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Search Doctors</label>
+                                <select id="search-specialization" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                    <option value="">-- All Specializations --</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700">Filter by Hospital</label>
+                                <select id="search-hospital" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                    <option value="">-- All Hospitals --</option>
+                                </select>
+                            </div>
+                            <button id="search-doctors" class="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">Search</button>
+                        </div>
+                    </div>
+                    <div class="md:col-span-2">
+                        <div id="patient-dashboard">
+                            <div class="bg-blue-50 p-4 rounded-lg mb-4">
+                                <h4 class="font-semibold text-blue-800">Patient Information</h4>
+                                <div id="patient-info" class="mt-2">
+                                    <!-- Patient info will be displayed here -->
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-4">
+                                <div class="bg-white p-4 rounded shadow">
+                                    <h5 class="font-medium text-blue-700 mb-2">Available Doctors</h5>
+                                    <div id="available-doctors-list" class="overflow-y-auto max-h-60">
+                                        <!-- Doctors will be listed here -->
+                                    </div>
+                                </div>
+
+                                <div class="bg-white p-4 rounded shadow">
+                                    <h5 class="font-medium text-blue-700 mb-2">Appointment Details</h5>
+                                    <div id="appointment-details">
+                                        <div class="hidden" id="doctor-selected-view">
+                                            <div class="flex justify-between items-center mb-4">
+                                                <div>
+                                                    <h6 class="font-medium" id="selected-doctor-name">Dr. Smith</h6>
+                                                    <p class="text-sm text-gray-600" id="selected-doctor-specialization">Cardiology</p>
+                                                    <p class="text-sm text-gray-600" id="selected-doctor-hospital">City Hospital</p>
+                                                    <p class="text-sm text-gray-600" id="selected-doctor-fee">₹500</p>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-medium text-gray-700">Select Date</label>
+                                                <input type="date" id="appointment-date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                                            </div>
+                                            <div class="mt-4">
+                                                <h6 class="font-medium text-sm">Available Time Slots</h6>
+                                                <div id="doctor-availability-slots" class="mt-2 grid grid-cols-3 gap-2">
+                                                    <!-- Time slots will be listed here -->
+                                                </div>
+                                            </div>
+                                            <button id="book-appointment" class="mt-4 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700">Book Appointment</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mt-6 bg-white p-4 rounded shadow">
+                                <h5 class="font-medium text-blue-700 mb-2">Appointment History</h5>
+                                <div id="patient-appointment-history">
+                                    <!-- History will be listed here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data Store
+        const dataStore = {
+            hospitals: [],
+            doctors: [],
+            patients: [],
+            departments: [],
+            appointments: [],
+            initialize: function() {
+                // Check if localStorage has data
+                const storedData = localStorage.getItem('hospitalSystemData');
+                if (storedData) {
+                    const parsedData = JSON.parse(storedData);
+                    this.hospitals = parsedData.hospitals || [];
+                    this.doctors = parsedData.doctors || [];
+                    this.patients = parsedData.patients || [];
+                    this.departments = parsedData.departments || [];
+                    this.appointments = parsedData.appointments || [];
+                } else {
+                    // Initialize with some sample data
+                    this.hospitals = [
+                        { id: 1, name: 'City General Hospital', location: '123 Main St, City' },
+                        { id: 2, name: 'Medicare Center', location: '456 Health Ave, Town' }
+                    ];
+                    this.doctors = [
+                        { 
+                            id: 1, 
+                            name: 'Dr. Smith', 
+                            qualifications: 'MD, Cardiology', 
+                            specializations: ['Cardiology'], 
+                            experience: 10,
+                            hospitalAffiliations: [
+                                { hospitalId: 1, fee: 500 },
+                                { hospitalId: 2, fee: 600 }
+                            ],
+                            availability: {
+                                '1': {
+                                    '2023-11-15': ['09:00', '10:00', '14:00'],
+                                    '2023-11-16': ['11:00', '15:00']
+                                },
+                                '2': {
+                                    '2023-11-17': ['10:00', '14:00']
+                                }
+                            }
+                        },
+                        { 
+                            id: 2, 
+                            name: 'Dr. Johnson', 
+                            qualifications: 'MD, Orthopedics', 
+                            specializations: ['Orthopedics'], 
+                            experience: 8,
+                            hospitalAffiliations: [
+                                { hospitalId: 1, fee: 400 }
+                            ],
+                            availability: {
+                                '1': {
+                                    '2023-11-15': ['11:00', '14:00'],
+                                    '2023-11-18': ['09:00', '10:00']
+                                }
+                            }
+                        }
+                    ];
+                    this.patients = [
+                        { id: 1, name: 'John Doe', gender: 'Male', dob: '1985-05-15', uniqueId: 'A1234567' },
+                        { id: 2, name: 'Jane Smith', gender: 'Female', dob: '1990-08-21', uniqueId: 'B7654321' }
+                    ];
+                    this.departments = [
+                        { id: 1, hospitalId: 1, name: 'Cardiology' },
+                        { id: 2, hospitalId: 1, name: 'Orthopedics' },
+                        { id: 3, hospitalId: 2, name: 'Pediatrics' }
+                    ];
+                    this.appointments = [
+                        { 
+                            id: 1, 
+                            doctorId: 1, 
+                            patientId: 1, 
+                            hospitalId: 1, 
+                            date: '2023-11-10', 
+                            time: '10:00', 
+                            fee: 500,
+                            status: 'completed'
+                        },
+                        { 
+                            id: 2, 
+                            doctorId: 2, 
+                            patientId: 2, 
+                            hospitalId: 1, 
+                            date: '2023-11-12', 
+                            time: '14:00', 
+                            fee: 400,
+                            status: 'completed'
+                        }
+                    ];
+                    this.saveData();
+                }
+            },
+            saveData: function() {
+                const data = {
+                    hospitals: this.hospitals,
+                    doctors: this.doctors,
+                    patients: this.patients,
+                    departments: this.departments,
+                    appointments: this.appointments
+                };
+                localStorage.setItem('hospitalSystemData', JSON.stringify(data));
+            },
+            getNextId: function(array) {
+                return array.length > 0 ? Math.max(...array.map(item => item.id)) + 1 : 1;
+            }
+        };
+
+        // UI Functions
+        const ui = {
+            init: function() {
+                // Initialize tab switching
+                document.querySelectorAll('.tab-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.tab-btn').forEach(b => {
+                            b.classList.remove('text-blue-600', 'border-blue-600');
+                            b.classList.add('text-gray-500');
+                        });
+                        btn.classList.remove('text-gray-500');
+                        btn.classList.add('text-blue-600', 'border-blue-600');
+
+                        document.querySelectorAll('.tab-content').forEach(content => {
+                            content.classList.remove('active');
+                        });
+                        document.getElementById(btn.dataset.tab).classList.add('active');
+                    });
+                });
+
+                // Initialize data store
+                dataStore.initialize();
+
+                // Populate dropdowns
+                this.populateHospitalSelects();
+                this.populateDoctorSelects();
+                this.populatePatientSelects();
+                this.populateSpecializationSelect();
+                this.generateCalendar();
+
+                // Set up event listeners
+                this.setupEventListeners();
+
+                // Show registration tab by default
+                document.querySelector('.tab-btn[data-tab="register"]').click();
+            },
+            populateHospitalSelects: function() {
+                const selects = [
+                    document.getElementById('admin-hospital-select'),
+                    document.getElementById('doctor-hospital-select'),
+                    document.getElementById('search-hospital')
+                ];
+
+                selects.forEach(select => {
+                    if (select) {
+                        select.innerHTML = '<option value="">-- Select Hospital --</option>';
+                        dataStore.hospitals.forEach(hospital => {
+                            const option = document.createElement('option');
+                            option.value = hospital.id;
+                            option.textContent = hospital.name;
+                            select.appendChild(option);
+                        });
+                    }
+                });
+            },
+            populateDoctorSelects: function() {
+                const selects = [
+                    document.getElementById('doctor-select')
+                ];
+
+                selects.forEach(select => {
+                    if (select) {
+                        select.innerHTML = '<option value="">-- Select Doctor --</option>';
+                        dataStore.doctors.forEach(doctor => {
+                            const option = document.createElement('option');
+                            option.value = doctor.id;
+                            option.textContent = doctor.name;
+                            select.appendChild(option);
+                        });
+                    }
+                });
+            },
+            populatePatientSelects: function() {
+                const selects = [
+                    document.getElementById('patient-select')
+                ];
+
+                selects.forEach(select => {
+                    if (select) {
+                        select.innerHTML = '<option value="">-- Select Patient --</option>';
+                        dataStore.patients.forEach(patient => {
+                            const option = document.createElement('option');
+                            option.value = patient.id;
+                            option.textContent = patient.name;
+                            select.appendChild(option);
+                        });
+                    }
+                });
+            },
+            populateSpecializationSelect: function() {
+                const select = document.getElementById('search-specialization');
+                if (!select) return;
+                
+                // Get all unique specializations from doctors
+                const specializations = new Set();
+                dataStore.doctors.forEach(doctor => {
+                    doctor.specializations.forEach(spec => {
+                        specializations.add(spec);
+                    });
+                });
+
+                select.innerHTML = '<option value="">-- All Specializations --</option>';
+                Array.from(specializations).forEach(spec => {
+                    const option = document.createElement('option');
+                    option.value = spec;
+                    option.textContent = spec;
+                    select.appendChild(option);
+                });
+            },
+            generateCalendar: function() {
+                const calendar = document.getElementById('calendar');
+                if (!calendar) return;
+                
+                // Clear previous calendar
+                calendar.innerHTML = '';
+
+                // Add day headers
+                const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                days.forEach(day => {
+                    const dayHeader = document.createElement('div');
+                    dayHeader.classList.add('text-center', 'font-medium', 'py-2');
+                    dayHeader.textContent = day;
+                    calendar.appendChild(dayHeader);
+                });
+
+                // Get current date and month
+                const currentDate = new Date();
+                const currentMonth = currentDate.getMonth();
+                const currentYear = currentDate.getFullYear();
+
+                // Get first day of month and total days in month
+                const firstDay = new Date(currentYear, currentMonth, 1).getDay();
+                const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+
+                // Add empty cells for days before the first day of month
+                for (let i = 0; i < firstDay; i++) {
+                    const emptyCell = document.createElement('div');
+                    emptyCell.classList.add('calendar-day');
+                    calendar.appendChild(emptyCell);
+                }
+
+                // Add cells for each day of the month
+                for (let i = 1; i <= daysInMonth; i++) {
+                    const dayCell = document.createElement('div');
+                    dayCell.classList.add('calendar-day');
+                    dayCell.innerHTML = `<div class="text-right text-sm">${i}</div>`;
+                    calendar.appendChild(dayCell);
+                }
+            },
+            setupEventListeners: function() {
+                // Registration buttons
+                document.getElementById('register-hospital')?.addEventListener('click', () => this.registerHospital());
+                document.getElementById('register-doctor')?.addEventListener('click', () => this.registerDoctor());
+                document.getElementById('register-patient')?.addEventListener('click', () => this.registerPatient());
+
+                // Hospital admin buttons
+                document.getElementById('admin-hospital-select')?.addEventListener('change', () => this.loadHospitalAdminData());
+                document.getElementById('add-department')?.addEventListener('click', () => this.addDepartment());
+
+                // Doctor panel buttons
+                document.getElementById('doctor-select')?.addEventListener('change', () => this.loadDoctorData());
+                document.getElementById('doctor-hospital-select')?.addEventListener('change', () => this.loadDoctorHospitalData());
+                document.getElementById('set-doctor-fee')?.addEventListener('click', () => this.setDoctorFee());
+                document.getElementById('set-availability')?.addEventListener('click', () => this.setDoctorAvailability());
+
+                // Patient panel buttons
+                document.getElementById('patient-select')?.addEventListener('change', () => this.loadPatientData());
+                document.getElementById('search-doctors')?.addEventListener('click', () => this.searchDoctors());
+                document.getElementById('book-appointment')?.addEventListener('click', () => this.bookAppointment());
+            },
+            registerHospital: function() {
+                const name = document.getElementById('hospital-name').value;
+                const location = document.getElementById('hospital-location').value;
+
+                if (!name || !location) {
+                    alert('Please enter both hospital name and location');
+                    return;
+                }
+
+                const newHospital = {
+                    id: dataStore.getNextId(dataStore.hospitals),
+                    name,
+                    location
+                };
+
+                dataStore.hospitals.push(newHospital);
+                dataStore.saveData();
+                this.populateHospitalSelects();
+
+                alert('Hospital registered successfully!');
+                document.getElementById('hospital-name').value = '';
+                document.getElementById('hospital-location').value = '';
+            },
+            registerDoctor: function() {
+                const name = document.getElementById('doctor-name').value;
+                const qualifications = document.getElementById('doctor-qualifications').value;
+                const specializations = document.getElementById('doctor-specializations').value.split(',').map(s => s.trim());
+                const experience = parseInt(document.getElementById('doctor-experience').value);
+
+                if (!name || !qualifications || specializations.length === 0 || isNaN(experience)) {
+                    alert('Please fill all doctor details');
+                    return;
+                }
+
+                const newDoctor = {
+                    id: dataStore.getNextId(dataStore.doctors),
+                    name,
+                    qualifications,
+                    specializations,
+                    experience,
+                    hospitalAffiliations: [],
+                    availability: {}
+                };
+
+                dataStore.doctors.push(newDoctor);
+                dataStore.saveData();
+                this.populateDoctorSelects();
+                this.populateSpecializationSelect();
+
+                alert('Doctor registered successfully!');
+                document.getElementById('doctor-name').value = '';
+                document.getElementById('doctor-qualifications').value = '';
+                document.getElementById('doctor-specializations').value = '';
+                document.getElementById('doctor-experience').value = '';
+            },
+            registerPatient: function() {
+                const name = document.getElementById('patient-name').value;
+                const gender = document.getElementById('patient-gender').value;
+                const dob = document.getElementById('patient-dob').value;
+                const uniqueId = document.getElementById('patient-id').value;
+
+                if (!name || !gender || !dob || !uniqueId) {
+                    alert('Please fill all patient details');
+                    return;
+                }
+
+                const newPatient = {
+                    id: dataStore.getNextId(dataStore.patients),
+                    name,
+                    gender,
+                    dob,
+                    uniqueId
+                };
+
+                dataStore.patients.push(newPatient);
+                dataStore.saveData();
+                this.populatePatientSelects();
+
+                alert('Patient registered successfully!');
+                document.getElementById('patient-name').value = '';
+                document.getElementById('patient-gender').value = 'Male';
+                document.getElementById('patient-dob').value = '';
+                document.getElementById('patient-id').value = '';
+            },
+            loadHospitalAdminData: function() {
+                const hospitalId = document.getElementById('admin-hospital-select').value;
+                if (!hospitalId) return;
+
+                const hospital = dataStore.hospitals.find(h => h.id == hospitalId);
+                if (!hospital) return;
+
+                // Calculate statistics
+                const hospitalDoctors = dataStore.doctors.filter(d => 
+                    d.hospitalAffiliations.some(aff => aff.hospitalId == hospitalId)
+                );
+                const hospitalAppointments = dataStore.appointments.filter(a => a.hospitalId == hospitalId);
+                const totalRevenue = hospitalAppointments.reduce((sum, app) => sum + app.fee * 0.4, 0); // Hospital gets 40%
+
+                // Update statistics
+                document.getElementById('total-doctors').textContent = hospitalDoctors.length;
+                document.getElementById('total-consultations').textContent = hospitalAppointments.length;
+                document.getElementById('total-revenue').textContent = `₹${totalRevenue.toFixed(2)}`;
+
+                // Update doctors list
+                const doctorsList = document.getElementById('hospital-doctors-list');
+                doctorsList.innerHTML = '';
+                hospitalDoctors.forEach(doctor => {
+                    const aff = doctor.hospitalAffiliations.find(a => a.hospitalId == hospitalId);
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="px-2 py-1">${doctor.name}</td>
+                        <td class="px-2 py-1">${doctor.specializations.join(', ')}</td>
+                        <td class="px-2 py-1">₹${aff.fee}</td>
+                    `;
+                    doctorsList.appendChild(row);
+                });
+            },
+            addDepartment: function() {
+                const hospitalId = document.getElementById('admin-hospital-select').value;
+                const name = document.getElementById('new-department').value;
+
+                if (!hospitalId || !name) {
+                    alert('Please select a hospital and enter department name');
+                    return;
+                }
+
+                const newDept = {
+                    id: dataStore.getNextId(dataStore.departments),
+                    hospitalId: parseInt(hospitalId),
+                    name
+                };
+
+                dataStore.departments.push(newDept);
+                dataStore.saveData();
+
+                alert('Department added successfully!');
+                document.getElementById('new-department').value = '';
+            },
+            loadDoctorData: function() {
+                const doctorId = document.getElementById('doctor-select').value;
+                if (!doctorId) return;
+
+                const doctor = dataStore.doctors.find(d => d.id == doctorId);
+                if (!doctor) return;
+
+                // Update doctor statistics
+                const allAppointments = dataStore.appointments.filter(a => a.doctorId == doctorId);
+                const totalEarnings = allAppointments.reduce((sum, app) => sum + app.fee * 0.6, 0); // Doctor gets 60%
+
+                document.getElementById('doctor-total-consults').textContent = allAppointments.length;
+                document.getElementById('doctor-total-earnings').textContent = `₹${totalEarnings.toFixed(2)}`;
+                document.getElementById('doctor-hospital-count').textContent = doctor.hospitalAffiliations.length;
+
+                // Update hospital dropdown
+                const hospitalSelect = document.getElementById('doctor-hospital-select');
+                hospitalSelect.innerHTML = '<option value="">-- Select Hospital --</option>';
+                doctor.hospitalAffiliations.forEach(aff => {
+                    const hospital = dataStore.hospitals.find(h => h.id == aff.hospitalId);
+                    if (hospital) {
+                        const option = document.createElement('option');
+                        option.value = hospital.id;
+                        option.textContent = hospital.name;
+                        hospitalSelect.appendChild(option);
+                    }
+                });
+
+                // Populate earnings by hospital
+                const earningsDiv = document.getElementById('doctor-hospital-earnings');
+                earningsDiv.innerHTML = '<table class="min-w-full"><thead><tr><th class="text-left">Hospital</th><th class="text-left">Earnings</th></tr></thead><tbody id="hospital-earnings-list"></tbody></table>';
+
+                const earningsList = document.getElementById('hospital-earnings-list');
+                doctor.hospitalAffiliations.forEach(aff => {
+                    const hospital = dataStore.hospitals.find(h => h.id == aff.hospitalId);
+                    const appointments = dataStore.appointments.filter(a => 
+                        a.doctorId == doctorId && a.hospitalId == aff.hospitalId
+                    );
+                    const earnings = appointments.reduce((sum, app) => sum + app.fee * 0.6, 0);
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="px-2 py-1">${hospital.name}</td>
+                        <td class="px-2 py-1">₹${earnings.toFixed(2)}</td>
+                    `;
+                    earningsList.appendChild(row);
+                });
+            },
+            loadDoctorHospitalData: function() {
+                const doctorId = document.getElementById('doctor-select').value;
+                const hospitalId = document.getElementById('doctor-hospital-select').value;
+                
+                if (!doctorId || !hospitalId) return;
+
+                const doctor = dataStore.doctors.find(d => d.id == doctorId);
+                const aff = doctor.hospitalAffiliations.find(a => a.hospitalId == hospitalId);
+
+                if (aff) {
+                    document.getElementById('doctor-fee').value = aff.fee;
+                } else {
+                    document.getElementById('doctor-fee').value = '';
+                }
+            },
+            setDoctorFee: function() {
+                const doctorId = document.getElementById('doctor-select').value;
+                const hospitalId = document.getElementById('doctor-hospital-select').value;
+                const fee = parseFloat(document.getElementById('doctor-fee').value);
+
+                if (!doctorId || !hospitalId || isNaN(fee) || fee <= 0) {
+                    alert('Please select doctor, hospital and enter valid fee');
+                    return;
+                }
+
+                const doctor = dataStore.doctors.find(d => d.id == doctorId);
+                let aff = doctor.hospitalAffiliations.find(a => a.hospitalId == hospitalId);
+
+                if (aff) {
+                    aff.fee = fee;
+                } else {
+                    // Add new affiliation
+                    aff = { hospitalId: parseInt(hospitalId), fee };
+                    doctor.hospitalAffiliations.push(aff);
+                    
+                    // Initialize availability for this hospital
+                    if (!doctor.availability[hospitalId]) {
+                        doctor.availability[hospitalId] = {};
+                    }
+                }
+
+                dataStore.saveData();
+                this.loadDoctorData();
+
+                alert('Consultation fee set successfully!');
+            },
+            setDoctorAvailability: function() {
+                const doctorId = document.getElementById('doctor-select').value;
+                const hospitalId = document.getElementById('doctor-hospital-select').value;
+                const date = document.getElementById('availability-date').value;
+                
+                if (!doctorId || !hospitalId || !date) {
+                    alert('Please select doctor, hospital and date');
+                    return;
+                }
+
+                // Get selected time slots
+                const checkboxes = document.querySelectorAll('input[type="checkbox"][id^="slot-"]:checked');
+                const timeSlots = Array.from(checkboxes).map(cb => cb.value);
+
+                const doctor = dataStore.doctors.find(d => d.id == doctorId);
+                
+                // Initialize availability structure if not exists
+                if (!doctor.availability[hospitalId]) {
+                    doctor.availability[hospitalId] = {};
+                }
+
+                // Set availability for the selected date
+                doctor.availability[hospitalId][date] = timeSlots;
+
+                dataStore.saveData();
+                alert('Availability set successfully!');
+            },
+            loadPatientData: function() {
+                const patientId = document.getElementById('patient-select').value;
+                if (!patientId) return;
+
+                const patient = dataStore.patients.find(p => p.id == patientId);
+                if (!patient) return;
+
+                // Update patient info
+                const patientInfo = document.getElementById('patient-info');
+                patientInfo.innerHTML = `
+                    <p><strong>Name:</strong> ${patient.name}</p>
+                    <p><strong>Gender:</strong> ${patient.gender}</p>
+                    <p><strong>Date of Birth:</strong> ${patient.dob}</p>
+                    <p><strong>ID:</strong> ${patient.uniqueId}</p>
+                `;
+
+                // Load appointment history
+                const historyDiv = document.getElementById('patient-appointment-history');
+                historyDiv.innerHTML = '';
+
+                const appointments = dataStore.appointments
+                    .filter(a => a.patientId == patientId)
+                    .sort((a, b) => new Date(`${b.date} ${b.time}`) - new Date(`${a.date} ${a.time}`));
+
+                if (appointments.length === 0) {
+                    historyDiv.innerHTML = '<p>No appointment history found.</p>';
+                    return;
+                }
+
+                const table = document.createElement('table');
+                table.className = 'min-w-full divide-y divide-gray-200';
+                table.innerHTML = `
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Date</th>
+                            <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Time</th>
+                            <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Doctor</th>
+                            <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Hospital</th>
+                            <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Fee</th>
+                            <th class="px-2 py-1 text-left text-xs font-medium text-gray-500">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="patient-history-list" class="bg-white divide-y divide-gray-200"></tbody>
+                `;
+
+                const tbody = table.querySelector('#patient-history-list');
+                appointments.forEach(app => {
+                    const doctor = dataStore.doctors.find(d => d.id == app.doctorId);
+                    const hospital = dataStore.hospitals.find(h => h.id == app.hospitalId);
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td class="px-2 py-1">${app.date}</td>
+                        <td class="px-2 py-1">${app.time}</td>
+                        <td class="px-2 py-1">${doctor?.name || 'Unknown'}</td>
+                        <td class="px-2 py-1">${hospital?.name || 'Unknown'}</td>
+                        <td class="px-2 py-1">₹${app.fee}</td>
+                        <td class="px-2 py-1">${app.status}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+
+                historyDiv.appendChild(table);
+            },
+            searchDoctors: function() {
+                const patientId = document.getElementById('patient-select').value;
+                const specialization = document.getElementById('search-specialization').value;
+                const hospitalId = document.getElementById('search-hospital').value;
+
+                if (!patientId) {
+                    alert('Please select a patient first');
+                    return;
+                }
+
+                let filteredDoctors = dataStore.doctors;
+
+                // Filter by specialization if selected
+                if (specialization) {
+                    filteredDoctors = filteredDoctors.filter(d => 
+                        d.specializations.includes(specialization)
+                    );
+                }
+
+                // Filter by hospital if selected
+                if (hospitalId) {
+                    filteredDoctors = filteredDoctors.filter(d => 
+                        d.hospitalAffiliations.some(a => a.hospitalId == hospitalId)
+                    );
+                }
+
+                // Display results
+                const doctorsList = document.getElementById('available-doctors-list');
+                doctorsList.innerHTML = '';
+
+                if (filteredDoctors.length === 0) {
+                    doctorsList.innerHTML = '<p>No doctors found matching your criteria.</p>';
+                    return;
+                }
+
+                filteredDoctors.forEach(doctor => {
+                    const card = document.createElement('div');
+                    card.className = 'p-3 mb-2 border rounded hover:bg-blue-50 cursor-pointer';
+                    card.dataset.doctorId = doctor.id;
+                    
+                    // Get all hospitals this doctor is affiliated with
+                    const hospitals = doctor.hospitalAffiliations.map(aff => {
+                        const h = dataStore.hospitals.find(hosp => hosp.id == aff.hospitalId);
+                        return {
+                            id: h.id,
+                            name: h.name,
+                            fee: aff.fee
+                        };
+                    });
+
+                    card.innerHTML = `
+                        <h6 class="font-medium">${doctor.name}</h6>
+                        <p class="text-sm text-gray-600">${doctor.qualifications}</p>
+                        <p class="text-sm text-gray-600">Specializations: ${doctor.specializations.join(', ')}</p>
+                        <p class="text-sm text-gray-600">Experience: ${doctor.experience} years</p>
+                        
+                        <div class="mt-2 border-t pt-2">
+                            <h6 class="text-xs font-medium">Available at:</h6>
+                            ${hospitals.map(h => `
+                                <div class="flex justify-between items-center text-sm">
+                                    <span>${h.name}</span>
+                                    <span>₹${h.fee}</span>
+                                    <button class="text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded select-hospital" 
+                                        data-doctor-id="${doctor.id}" 
+                                        data-hospital-id="${h.id}">
+                                        Select
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    
+                    // Add event listener to select buttons
+                    card.querySelectorAll('.select-hospital').forEach(btn => {
+                        btn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            this.selectDoctorForAppointment(
+                                parseInt(btn.dataset.doctorId),
+                                parseInt(btn.dataset.hospitalId)
+                            );
+                        });
+                    });
+
+                    doctorsList.appendChild(card);
+                });
+            },
+            selectDoctorForAppointment: function(doctorId, hospitalId) {
+                const doctor = dataStore.doctors.find(d => d.id == doctorId);
+                const hospital = dataStore.hospitals.find(h => h.id == hospitalId);
+                const aff = doctor.hospitalAffiliations.find(a => a.hospitalId == hospitalId);
+
+                // Update the appointment details view
+                const detailsView = document.getElementById('doctor-selected-view');
+                detailsView.classList.remove('hidden');
+
+                document.getElementById('selected-doctor-name').textContent = doctor.name;
+                document.getElementById('selected-doctor-specialization').textContent = doctor.specializations.join(', ');
+                document.getElementById('selected-doctor-hospital').textContent = hospital.name;
+                document.getElementById('selected-doctor-fee').textContent = `₹${aff.fee}`;
+
+                // Store the current selection in data attributes
+                detailsView.dataset.doctorId = doctorId;
+                detailsView.dataset.hospitalId = hospitalId;
+                
+                // Clear previous date selection
+                document.getElementById('appointment-date').value = '';
+                document.getElementById('doctor-availability-slots').innerHTML = '';
+            },
+            bookAppointment: function() {
+                const patientId = document.getElementById('patient-select').value;
+                const detailsView = document.getElementById('doctor-selected-view');
+                const doctorId = detailsView.dataset.doctorId;
+                const hospitalId = detailsView.dataset.hospitalId;
+                const date = document.getElementById('appointment-date').value;
+                const timeSlot = document.querySelector('#doctor-availability-slots .time-slot.selected')?.textContent;
+
+                if (!patientId || !doctorId || !hospitalId || !date || !timeSlot) {
+                    alert('Please complete all appointment details');
+                    return;
+                }
+
+                // Get doctor to verify fee
+                const doctor = dataStore.doctors.find(d => d.id == doctorId);
+                const aff = doctor.hospitalAffiliations.find(a => a.hospitalId == hospitalId);
+                const fee = aff.fee;
+
+                const newAppointment = {
+                    id: dataStore.getNextId(dataStore.appointments),
+                    doctorId: parseInt(doctorId),
+                    patientId: parseInt(patientId),
+                    hospitalId: parseInt(hospitalId),
+                    date,
+                    time: timeSlot,
+                    fee,
+                    status: 'booked'
+                };
+
+                dataStore.appointments.push(newAppointment);
+                dataStore.saveData();
+
+                alert('Appointment booked successfully!');
+                
+                // Clear selection
+                document.getElementById('appointment-date').value = '';
+                document.getElementById('doctor-availability-slots').innerHTML = '';
+
+                // Reload patient data to show new appointment
+                this.loadPatientData();
+            },
+            showDoctorAvailability: function(date) {
+                const detailsView = document.getElementById('doctor-selected-view');
+                const doctorId = detailsView.dataset.doctorId;
+                const hospitalId = detailsView.dataset.hospitalId;
+
+                if (!doctorId || !hospitalId || !date) return;
+
+                const doctor = dataStore.doctors.find(d => d.id == doctorId);
+                const timeSlots = doctor.availability[hospitalId]?.[date] || [];
+
+                // Get already booked slots for this doctor at this hospital on this date
+                const bookedSlots = dataStore.appointments
+                    .filter(a => 
+                        a.doctorId == doctorId && 
+                        a.hospitalId == hospitalId && 
+                        a.date == date
+                    )
+                    .map(a => a.time);
+
+                // Show available slots
+                const slotsContainer = document.getElementById('doctor-availability-slots');
+                slotsContainer.innerHTML = '';
+
+                timeSlots.forEach(slot => {
+                    const isBooked = bookedSlots.includes(slot);
+                    const slotDiv = document.createElement('div');
+                    slotDiv.className = `time-slot text-center p-1 rounded text-sm ${isBooked ? 'booked' : ''}`;
+                    slotDiv.textContent = slot;
+                    
+                    if (!isBooked) {
+                        slotDiv.addEventListener('click', () => {
+                            document.querySelectorAll('#doctor-availability-slots .time-slot').forEach(s => {
+                                s.classList.remove('selected', 'bg-blue-200');
+                            });
+                            slotDiv.classList.add('selected', 'bg-blue-200');
+                        });
+                    }
+
+                    slotsContainer.appendChild(slotDiv);
+                });
+
+                if (timeSlots.length === 0) {
+                    slotsContainer.innerHTML = '<p class="text-sm text-gray-500">No availability for selected date</p>';
+                }
+            }
+        };
+
+        // Initialize the UI when the DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            ui.init();
+            
+            // Set up event listener for date selection in appointment
+            document.getElementById('appointment-date')?.addEventListener('change', function() {
+                ui.showDoctorAvailability(this.value);
+            });
+        });
+    </script>
+</body>
+</html>
